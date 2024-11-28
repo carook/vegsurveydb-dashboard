@@ -26,7 +26,7 @@ Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケー�
 利用を希望する方は，<a href="https://www.biodic.go.jp/">環境省生物多様性センター</a>の<a href="http://gis.biodic.go.jp/webgis/sc-006.html">植生調査のページ</a>に掲載されている「全国の植生調査データベース（PDF）」記載の専用窓口へメールで依頼してください。ダウンロードURLが送られてきますので，ファイルを取得できます。
 
 ## Rの設定
-ファイルはrmarkdownファイルです。
+ファイルはrmarkdownファイルです。なお，検証はWindows環境で行っており，他のOSでの利用については申し訳ありませんが不明です。
 ### アクセスファイルの読み込み設定
 14行目に，植生地図データベースのファイルパスを設定します。
 
