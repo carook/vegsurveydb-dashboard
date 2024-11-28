@@ -1,7 +1,7 @@
 # 全国植生地図データベース用ダッシュボード
-本サイトでは<a href="https://www.biodic.go.jp/">環境省生物多様性センター</a>ーが提供する全国植生地図データベース（アクセスファイル；mdb）のデータ表示用ダッシュボードを提供しています。
+本サイトでは<a href="https://www.biodic.go.jp/">環境省生物多様性センター</a>が提供する全国植生地図データベース（アクセスファイル；mdb）のデータ表示用ダッシュボードを提供しています。
 
-Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケージ</a>を活用し，データベースの「frm_データ表示」で表示される調査地点の概要や出現種の情報に加えて，凡例区分ごとの分布図や都道府県毎の集計結果，調査地点の位置図や空中写真・衛星画像データを表示できるようにしました。
+Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケージ</a>を活用し，データベースの「frm_データ表示」で表示される調査地点の概要や出現種の情報に加えて，凡例区分ごとの分布図や都道府県毎の集計結果，調査地点の位置図や空中写真を表示できるようにしました。<a href="https://github.com/r-spatial/rgee">rgeeパッケージ</a>を利用することで，Google Earth Engineから調査地点の衛星データを取得し表示させることもできます。
 
 自由に改変していただいてかまいませんので，各自のやりたいことに合わせてレイアウトなどを変更して使っていただければ幸いです。
 
@@ -21,10 +21,29 @@ Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケー�
 ※調査地点数を除いて「全国の植生調査データベース（PDF）」表3より引用
 
 ### データベースファイルの取得
-本サイトでは，植生地図DBのファイルは提供していません。
+本サイトでは，植生地図データベースのファイルは提供していません。
 
 利用を希望する方は，<a href="https://www.biodic.go.jp/">環境省生物多様性センター</a>の<a href="http://gis.biodic.go.jp/webgis/sc-006.html">植生調査のページ</a>に掲載されている「全国の植生調査データベース（PDF）」記載の専用窓口へメールで依頼してください。ダウンロードURLが送られてきますので，ファイルを取得できます。
 
 ## Rの設定
+ファイルはrmarkdownファイルです。
+### アクセスファイルの読み込み設定
+
+### 日本地図の取得
+
+### Google Earth Engineの利用
+markdownファイルの17-20行目でGoogle Earth Engineの利用に必要な情報を設定します。```gee```は標準でFalseにしていますので，利用したい場合はTrueに変えてください。
+
+```R
+### Google Earth Engineの設定
+gee <- T
+gee_project <- 'プロジェクト名'
+gee_user <- 'ユーザ名'
+gee_sessioninfo.path <- "ee_sessioninfo.Rのファイルパス"
+```
+
+Google Earth Engineの利用については，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee01">RでGoogle Earth Engineを操作できるようにする</a>を参考にしてください。
+
+なお，ダッシュボードではSentinel-2データをCloud Score+データセットを利用して雲除去をした上で表示させるようにしています。コードをそのまま利用する場合には，earthengine-apiがrgeeパッケージで検証されたバージョンよりも新しいものを利用するため，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee07">RでHansenGlobalForestChangeデータと雲除去したSentinel画像を表示してみる</a>に記載のee_sessioninfo.Rを読み込ませるようにしてください。
 
 ## ダッシュボードの概要
