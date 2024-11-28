@@ -30,7 +30,7 @@ Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケー�
 ### アクセスファイルの読み込み設定
 
 ### 日本地図データの取得
-分布図の背景となる日本地図は，国土地理院が作成した地球地図日本の行政界データの利用を想定しています。詳しくは，<a href="https://zenn.dev/carook/articles/carook-zenn-r-mapjapan#Rで日本地図を描く方法">Rで日本地図を描く方法</a>を参考にしてください。
+分布図の背景となる日本地図は，国土地理院が作成した地球地図日本の行政界データの利用を想定しています。詳しくは，<a href="https://zenn.dev/carook/articles/carook-zenn-r-mapjapan#ベクタ境界データの利用（tmap，ggplot2）">Rで日本地図を描く方法</a>を参考にしてください。
 
 ### Google Earth Engineの利用
 markdownファイルの17-20行目でGoogle Earth Engineの利用に必要な情報を設定します。```gee```は標準でFalseにしていますので，利用したい場合はTrueに変えてください。
