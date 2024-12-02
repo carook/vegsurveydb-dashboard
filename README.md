@@ -35,7 +35,7 @@ Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケー�
 ### 日本地図データの取得
 15行目に，分布図の背景となる日本地図のファイルパスを設定します。
 
-ここでは，<a href="https://www.gsi.go.jp/top.html">国土地理院</a>が作成した<a href="https://www.gsi.go.jp/kankyochiri/gm_jpn.html">地球地図日本</a>の行政界データの利用することとしています（が，別のデータを使うこともできます）。詳しくは，<a href="https://zenn.dev/carook/articles/carook-zenn-r-mapjapan#ベクタ境界データの利用（tmap，ggplot2）">Rで日本地図を描く方法</a>を参考にしてください。
+ここでは，<a href="https://www.gsi.go.jp/top.html">国土地理院</a>が作成した<a href="https://www.gsi.go.jp/kankyochiri/gm_jpn.html">地球地図日本</a>の行政界データを利用することとしています（が，別のデータを使うこともできます）。詳しくは，<a href="https://zenn.dev/carook/articles/carook-zenn-r-mapjapan#ベクタ境界データの利用（tmap，ggplot2）">Rで日本地図を描く方法</a>を参考にしてください。
 
 ### Google Earth Engineの利用
 17-18行目でGoogle Earth Engineの利用に必要な情報を設定します。```gee```は標準でFalseにしていますので，利用したい場合はTrueに変えてください。
@@ -52,7 +52,7 @@ Google Earth Engineの利用については，<a href="https://zenn.dev/carook/a
 コードをそのまま利用する場合には，earthengine-apiについて，rgeeパッケージで検証されたバージョンよりも新しいものを利用するため，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee07">RでHansenGlobalForestChangeデータと雲除去したSentinel画像を表示してみる</a>を参考に，earthengine-apiを1.1.0以上としてください。なお，Rへのデータ読み込みはないので，ee_sessioninfo.Rの読み込みは不要です。
 
 ## ダッシュボードの概要
-### 初期画面
+
 RStudioでダウンロードしたR markdownファイルを開き，スクリプトの上部にある「Run document」アイコンを押すと，ローカルコンピュータで動的なダッシュボード（アプリ）のための配信サーバ（インスタンス）が動作しはじめ，以下の画面が表示されます。
 
 ダッシュボードは，「群集情報（調査地点選択）」と「調査地点情報」の2ページに分かれています。
@@ -62,7 +62,23 @@ RStudioでダウンロードしたR markdownファイルを開き，スクリプ
 ### 群集情報（調査地点選択）
 ![群集情報](./vegsurveydb_dashboard-2.png)
 
-1：
+1：表示させたい凡例区分を1つ以上選択してください。
+
+2：1で選択した凡例区分の調査地点一覧が表示されるので，「調査地点情報」で表示させたい調査地点を選択してください（1度に1地点しか選択できません）。
+
+3：1で選択した凡例区分について，日本地図を背景として分布図を表示します（緯度経度の情報がないものは表示されません）。2で選択した調査地点の点が大きな丸で囲まれて表示されます。
+
+4：1で選択した凡例区分について，海抜と緯度の散布図を表示します（海抜又は緯度の情報がない，もしくは文字列で処理できない場合は表示されません）。2で選択した調査地点の点が大きな丸で囲まれて表示されます。
+
+5：1で選択した凡例区分について，都道府県ごとに集計した調査地点数を棒グラフで表示します。
 
 ### 調査地点情報
 ![調査地点情報](./vegsurveydb_dashboard-3.png)
+
+2で選択した調査地点一覧について，以下の情報を表示します。
+
+6：階層ごとの優占種・高さ・植被率を表示します。
+
+7：T002植物表のデータを表示します。
+
+8：調査地点の地図・空中写真・衛星画像データを表示します。赤丸のアイコンで，表示するレイヤを選択することができます。「標準地図（国土地理院）」「年度別空中写真（2007年以降）（国土地理院）」「Esri.WorldImagery」に加えて，Google Earth Engineの利用を可能にすると，Sentinel-2衛星画像から選択できます。
