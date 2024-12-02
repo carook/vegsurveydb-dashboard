@@ -1,0 +1,330 @@
+---
+title: "全国植生調査データベース（2000-2023年度版）"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+  runtime: shiny
+---
+
+Data sources: 環境省生物多様性センター, 2024年9月
+
+```{r setup, include=FALSE}
+### ファイルパスの設定
+mdb.path <- "全国植生調査データベースファイルへのパスを入力してください"
+gm_jpn.path <- "地球地図日本の行政界ファイルへのパスを入力してください"
+### Google Earth Engineの設定
+gee <- F
+gee_project <- 'プロジェクト名を入力してください'
+### パッケージの読み込み
+library(flexdashboard)
+library(DT)
+library(plotly)
+library(tidyverse)
+library(leaflet)
+library(sf)
+library(DBI)
+library(odbc)
+### 地球地図日本データの読み込み
+gm_jpn <- read_sf(gm_jpn.path) %>% 
+  group_by(nam) %>% summarize() %>% st_cast("MULTIPOLYGON") %>% 
+  st_cast("POLYGON")
+gm_jpn <- mutate(gm_jpn, area=st_area(gm_jpn)) %>%
+  filter(area > units::set_units(1*10^7, m^2))
+### 地理院タイルのcitation
+map_attr <- "<a href='http://maps.gsi.go.jp/development/ichiran.html' target='_blank'>地理院タイル</a>"
+### mdbファイルの読み込み
+con <- DBI::dbConnect(odbc::odbc(), 
+                      .connection_string = 
+                        paste0("Driver={Microsoft Access Driver (*.mdb, *.accdb)};",
+                               "Dbq=",mdb.path,";"))
+onStop(function(){
+    DBI::dbDisconnect(con)
+  })
+### Google Earth Engine
+if(gee == T){
+  library(rgee)
+  library(rgeeExtra)
+  reticulate::py_run_string("import ee")
+  reticulate::py_run_string(paste0("ee.Initialize(project='",gee_project,"')"))
+  daystart <- paste0(year(today())-1,"-05-15")
+  dayend <- paste0(year(today())-1,"-09-15")
+}
+
+```
+
+
+群集情報（調査地点選択）
+===
+
+Column{data-width=400}
+-----------------------------------------------------------------------
+
+### TM06: Legend Table
+
+```{r}
+DT::dataTableOutput("legend_data")
+legend_table <- tbl(con, "TM06統一凡例") %>%
+  select("凡例コード","植生区分","大区分","中区分","細区分") %>% collect()
+
+output$legend_data <- DT::renderDataTable({
+  legend_table
+}, rownames=F, filter='top', selection = 'multiple')
+
+```
+
+### T001: Survey Point
+
+```{r}
+DT::dataTableOutput("survey_point")
+survey_table <- reactive({
+  selected_row <- input$legend_data_rows_selected
+  selected_code <- legend_table$凡例コード[selected_row]
+  
+  validate(need(selected_row > 0, "TM06:Legend Tableから凡例を選んでください"))
+  
+  tbl(con, "T001調査地点一覧") %>%
+    filter(凡例コード %in% selected_code) %>%
+    select("調査地点コード","凡例コード","調査区分コード","都道府県コード",
+           "調査面積","調査年度","緯度":"経秒","海抜") %>% collect()
+})
+
+output$survey_point <- DT::renderDataTable({
+  survey_table() %>% select("凡例コード","都道府県コード","調査地点コード","調査区分コード","調査面積","調査年度")
+}, rownames=F, filter='top', selection='single', options=list(pageLength=25, dom="rtip"))
+```
+
+Column {data-width=400}
+-----------------------------------------------------------------------
+
+### 調査地点の分布【背景：地球地図日本第2.1版（国土地理院）】
+
+```{r}
+sp_point <- reactive({
+  survey_table() %>%
+    mutate(lat=緯度+緯分/60+緯秒/3600, lng=経度+経分/60+経秒/3600) %>%
+    drop_na(lat,lng) %>% filter(lat != 0) %>%
+    # 経緯度はJGD2000(EPSG：4612)に投影変換した座標
+    sf::st_as_sf(coords=c("lng","lat"), crs="EPSG:4612") %>%
+    # leafletパッケージではWGS84(EPSG:4326)を利用
+    # https://rstudio.github.io/leaflet/projections.html
+    sf::st_transform(crs="EPSG:4326")
+})
+
+renderPlotly({
+  
+  plot_jpn <- ggplot() + 
+    geom_sf(data = gm_jpn) + 
+    geom_sf(data= sp_point(), aes(color = 凡例コード), size = 0.8, alpha=0.5) +
+    coord_sf(crs=sf::st_crs("EPSG:3857"), default_crs = sf::st_crs("EPSG:4326")) +
+    theme_bw() +
+    theme(axis.title.x = element_blank(), axis.title.y = element_blank())
+  
+  if(is.null(input$survey_point_rows_selected)){
+    ggplotly(plot_jpn) %>%
+      style(text = sp_point()$調査地点コード, hoverinfo = "text")
+  } else {
+      point_selected_row  <- input$survey_point_rows_selected
+      point_selected_code <- survey_table()$調査地点コード[point_selected_row]
+      
+      validate(need(point_selected_row > 0, "Survey Pointから調査地点を選ぶと，分布図が表示されます。"))
+      
+      sp_point_selected <- sp_point() %>% filter(調査地点コード== point_selected_code)
+      if(length(sp_point_selected)){
+        plot_jpn <- plot_jpn +
+          geom_sf(data = sp_point_selected, aes(color = 凡例コード), 
+                  shape=21, size=5, alpha=1)
+        ggplotly(plot_jpn, tooltip = "text") %>%
+          style(text = sp_point()$調査地点コード, hoverinfo = "text")
+      }
+  }
+})
+
+```
+
+### 調査地点の分布（緯度・標高）
+
+```{r}
+renderPlotly({
+  sp_point_elev <- survey_table() %>%
+    mutate(lat=緯度+緯分/60+緯秒/3600, lng=経度+経分/60+経秒/3600) %>%
+    drop_na(lat,lng) %>% filter(lat != 0) %>%
+    filter(str_detect(海抜, "-", negate=T)) %>%
+    mutate( 
+      elev=case_when(
+        str_detect(海抜, "m") ~ str_remove_all(海抜, "m"),
+        str_detect(海抜, ",") ~ str_remove_all(海抜, ","),
+        str_detect(海抜, "\\'") ~ str_remove_all(海抜,"\\'"),
+        TRUE ~ 海抜 # 不要な文字列を除去
+        ),
+      elev = as.numeric(elev) # 海抜の全角数値はNAとなる
+      ) %>% 
+    drop_na(elev)
+  
+  plot_scatter <- ggplot(data=sp_point_elev,
+                         aes(x = lat,y = elev, colour = 凡例コード)) +
+    geom_point(size = 0.8, alpha=0.5) +
+    scale_x_continuous(limits=c(30,45), labels=scales::label_number(suffix="°N")) +
+    scale_y_continuous(limits=c(0,3800), labels=scales::label_number(big.mark=",", suffix="m")) +
+    labs(x="緯度", y="海抜") + theme_bw()
+  
+  if(is.null(input$survey_point_rows_selected)){
+    ggplotly(plot_scatter) %>% 
+      style(text = sp_point_elev$調査地点コード, hoverinfo = "text")
+  } else {
+      point_selected_row  <- input$survey_point_rows_selected
+      point_selected_code <- survey_table()$調査地点コード[point_selected_row]
+      
+      validate(need(point_selected_row > 0, "Survey Pointから調査地点を選ぶと，分布図が表示されます。"))
+      
+      sp_point_selected <- sp_point_elev %>% filter(調査地点コード== point_selected_code)
+      if(length(sp_point_selected)){
+        plot_scatter <- plot_scatter +
+          geom_point(data = sp_point_selected,
+                     aes(x = lat, y = elev, colour = 凡例コード), 
+                     shape=21, size=4, alpha=1)
+        ggplotly(plot_scatter) %>%
+          style(text = sp_point_elev$調査地点コード, hoverinfo = "text")
+      }
+  }
+})
+
+```
+
+Column {data-width=200}
+-----------------------------------------------------------------------
+
+### 都道府県ごとの調査地点数
+```{r}
+renderPlotly({
+  plot_bar <- survey_table() %>%
+    filter(!is.na(都道府県コード))%>%
+    summarise(N=n(),
+              .by=c(凡例コード, 都道府県コード)) %>%
+    mutate(都道府県コード=factor(都道府県コード)) %>%
+    ggplot() + 
+    geom_bar(aes(x=都道府県コード, y=N, fill=凡例コード), stat = "identity") +
+      scale_x_discrete(limits=factor(47:1), breaks=1:47)+
+      scale_y_continuous(expand=c(0,0))+
+      coord_flip()
+  ggplotly(plot_bar)
+})
+
+
+```
+
+
+調査地点情報
+===
+
+
+Column{data-width=250}
+-----------------------------------------------------------------------
+
+### T001:Summary Table
+
+```{r}
+renderTable({
+  point_selected_row  <- input$survey_point_rows_selected
+  point_selected_code <- survey_table()$調査地点コード[point_selected_row]
+  
+  validate(need(point_selected_row > 0, "Survey Pointから調査地点を選んでください。"))
+  
+  tbl(con, "T001調査地点一覧") %>%
+    filter(調査地点コード== point_selected_code) %>% 
+    select("調査地点コード","都道府県コード","凡例コード","凡例名","調査年度",
+           "高木層優占種":"コケ層植被率") %>% collect() %>%
+    pivot_longer(cols = everything(),
+                 values_to = "val", 
+                 values_transform = list(val = as.character))
+})
+```
+
+### T002:Plant species list
+```{r}
+renderTable({
+  point_selected_row  <- input$survey_point_rows_selected
+  point_selected_code <- survey_table()$調査地点コード[point_selected_row]
+  
+  validate(need(point_selected_row > 0, "Survey Pointから調査地点を選んでください。"))
+  
+  tbl(con, "T002植物表") %>% 
+    filter(調査地点コード== point_selected_code) %>% 
+    select("階層":"種名") %>% collect()
+})
+```
+
+
+Column{data-width=450}
+-----------------------------------------------------------------------
+
+### 調査地点地図
+
+```{r}
+one_point <- reactive({
+  point_selected_row  <- input$survey_point_rows_selected
+  point_selected_code <- survey_table()$調査地点コード[point_selected_row]
+  
+  validate(need(point_selected_row > 0, "Survey Pointから調査地点を選んでください。"))
+  
+  one_point <- sp_point() %>% 
+    filter(調査地点コード== point_selected_code) %>%
+    sf::st_coordinates() %>%
+    as.numeric()
+})
+
+renderLeaflet({
+  
+  map_survey <- leaflet() %>%
+    addProviderTiles("Esri.WorldImagery", group = "Esri.WorldImagery") %>%
+    addTiles("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", 
+             attribution = map_attr, group="年度別空中写真（2007年以降）（国土地理院）") %>%
+    addTiles("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", 
+             attribution = map_attr, group="標準地図（国土地理院）") %>%
+    addCircleMarkers(lng=one_point()[1], lat=one_point()[2], col="red", group="Markers") %>%
+    setView(one_point()[1], one_point()[2], zoom=16) %>%
+    addScaleBar(position="bottomright") 
+  
+  if(gee == T){
+      ee_geom <- ee$Geometry$Point(one_point())
+      csPlus <- ee$ImageCollection('GOOGLE/CLOUD_SCORE_PLUS/V1/S2_HARMONIZED')
+      QA_BAND <- 'cs'
+      CLEAR_THRESHOLD <- 0.60
+      S2_SR <- ee$ImageCollection("COPERNICUS/S2_SR_HARMONIZED")$
+        linkCollection(csPlus, list(QA_BAND))$
+        filterBounds(ee_geom)$
+        filterDate(daystart, dayend)$
+        map(function(img) {img$updateMask(img$select(QA_BAND)$gte(CLEAR_THRESHOLD))})$
+        scaleAndOffset()$
+        median()
+      S2_SR_RGB <- S2_SR$
+        visualize(bands=c("B4", "B3", "B2"), min=0, max=0.25)
+      map_S2_SR_RGB <- Map$addLayer(S2_SR_RGB)
+      
+      layername <- paste0("Sentinel-2（", daystart, "-", dayend, "）")
+      
+      map_survey %>%
+        addTiles(
+          urlTemplate = map_S2_SR_RGB$rgee$tokens,
+          attribution = 'Contains modified Copernicus Sentinel data | Cloud Score+ S2_HARMONIZED V1',
+          group=layername,
+          options = leaflet::tileOptions(opacity = 1)
+              ) %>% 
+        addLayersControl(
+          baseGroups = c("標準地図（国土地理院）","年度別空中写真（2007年以降）（国土地理院）",
+                         "Esri.WorldImagery", layername),
+          overlayGroups = c("Markers"),
+          position = "topleft")
+        
+  } else {
+    map_survey %>%
+      addLayersControl(
+        baseGroups = c("標準地図（国土地理院）","年度別空中写真（2007年以降）（国土地理院）",
+                       "Esri.WorldImagery"),
+        overlayGroups = c("Markers"),
+        position = "topleft")
+  }
+
+})
+
+```
