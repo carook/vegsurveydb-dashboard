@@ -35,21 +35,22 @@ Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケー�
 ### 日本地図データの取得
 15行目に，分布図の背景となる日本地図のファイルパスを設定します。
 
-ここでは，<a href="https://www.gsi.go.jp/top.html">国土地理院</a>が作成した<a href="https://www.gsi.go.jp/kankyochiri/gm_jpn.html">地球地図日本</a>の行政界データの利用を想定しています。詳しくは，<a href="https://zenn.dev/carook/articles/carook-zenn-r-mapjapan#ベクタ境界データの利用（tmap，ggplot2）">Rで日本地図を描く方法</a>を参考にしてください。
+ここでは，<a href="https://www.gsi.go.jp/top.html">国土地理院</a>が作成した<a href="https://www.gsi.go.jp/kankyochiri/gm_jpn.html">地球地図日本</a>の行政界データの利用することとしています（が，別のデータを使うこともできます）。詳しくは，<a href="https://zenn.dev/carook/articles/carook-zenn-r-mapjapan#ベクタ境界データの利用（tmap，ggplot2）">Rで日本地図を描く方法</a>を参考にしてください。
 
 ### Google Earth Engineの利用
-markdownファイルの17-20行目でGoogle Earth Engineの利用に必要な情報を設定します。```gee```は標準でFalseにしていますので，利用したい場合はTrueに変えてください。
+markdownファイルの17-18行目でGoogle Earth Engineの利用に必要な情報を設定します。```gee```は標準でFalseにしていますので，利用したい場合はTrueに変えてください。
 
 ```R
 ### Google Earth Engineの設定
 gee <- T
 gee_project <- 'プロジェクト名'
-gee_user <- 'ユーザ名'
-gee_sessioninfo.path <- "ee_sessioninfo.Rのファイルパス"
 ```
 
 Google Earth Engineの利用については，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee01">RでGoogle Earth Engineを操作できるようにする</a>を参考にしてください。
 
-なお，ダッシュボードではSentinel-2データをCloud Score+データセットを利用して雲除去をした上で表示させるようにしています。コードをそのまま利用する場合には，earthengine-apiがrgeeパッケージで検証されたバージョンよりも新しいものを利用するため，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee07">RでHansenGlobalForestChangeデータと雲除去したSentinel画像を表示してみる</a>に記載のee_sessioninfo.Rを読み込ませるようにしてください。
+ダッシュボードではSentinel-2データをCloud Score+データセットを利用して雲除去をした上で表示させるようにしています。コードをそのまま利用する場合には，earthengine-apiがrgeeパッケージで検証されたバージョンよりも新しいものを利用するため，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee07">RでHansenGlobalForestChangeデータと雲除去したSentinel画像を表示してみる</a>を参考に，earthengine-apiを1.1.0以上としてください。なお，Rへのデータ読み込みはないので，ee_sessioninfo.Rの読み込みは不要です。
 
 ## ダッシュボードの概要
+
+![初期画面](./vegsurvey_dashboard-1.png)
+
