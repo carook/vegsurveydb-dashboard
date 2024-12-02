@@ -1,7 +1,7 @@
 # 全国植生地図データベース用ダッシュボード
-本サイトでは<a href="https://www.biodic.go.jp/">環境省生物多様性センター</a>が提供する全国植生地図データベース（アクセスファイル；mdb）のデータ表示用ダッシュボードを提供しています。
+本サイトでは，<a href="https://www.biodic.go.jp/">環境省生物多様性センター</a>が提供する全国植生地図データベース（アクセスファイル；mdb）のデータ表示ダッシュボード用のR Markdown（.Rmd）ファイルを提供しています。
 
-Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケージ</a>を活用し，データベースの「frm_データ表示」で表示される調査地点の概要や出現種の情報に加えて，凡例区分ごとの分布図や都道府県毎の集計結果，調査地点の位置図や空中写真を表示できるようにしました。<a href="https://github.com/r-spatial/rgee">rgeeパッケージ</a>を利用することで，Google Earth Engineから調査地点の衛星データを取得し表示させることもできます。
+<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケージ</a>を活用し，データベースの「frm_データ表示」で表示される調査地点の概要や出現種の情報に加えて，凡例区分ごとの分布図や都道府県単位での集計結果，調査地点の地図や空中写真を表示できるようにしました。<a href="https://github.com/r-spatial/rgee">rgeeパッケージ</a>を利用することで，Google Earth Engineから調査地点の衛星データを取得し表示させることもできます。
 
 自由に改変していただいてかまいませんので，各自のやりたいことに合わせてレイアウトなどを変更して使っていただければ幸いです。
 
@@ -26,7 +26,8 @@ Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケー�
 利用を希望する方は，<a href="https://www.biodic.go.jp/">環境省生物多様性センター</a>の<a href="http://gis.biodic.go.jp/webgis/sc-006.html">植生調査のページ</a>に掲載されている「全国の植生調査データベース（PDF）」記載の専用窓口へメールで依頼してください。ダウンロードURLが送られてきますので，ファイルを取得できます。
 
 ## 初期設定
-ファイルはR Markdownファイルですので，RStudioで開けます。最初に使う前に以下の設定等をお個なう必要があります。なお，検証はWindows環境で行っており，他のOSでの利用については申し訳ありませんが不明です。
+最初に使う前に以下の設定等を行う必要があります。なお，検証はWindows環境で行っており，他のOSでの利用については不明です。
+
 ### アクセスファイルの読み込み設定
 14行目に，植生地図データベースのファイルパスを設定します。
 
@@ -35,17 +36,17 @@ Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケー�
 ### 日本地図データの取得
 15行目に，分布図の背景となる日本地図のファイルパスを設定します。
 
-ここでは，<a href="https://www.gsi.go.jp/top.html">国土地理院</a>が作成した<a href="https://www.gsi.go.jp/kankyochiri/gm_jpn.html">地球地図日本</a>の行政界データを利用することとしています（が，別のデータを使うこともできます）。詳しくは，<a href="https://zenn.dev/carook/articles/carook-zenn-r-mapjapan#ベクタ境界データの利用（tmap，ggplot2）">Rで日本地図を描く方法</a>を参考にしてください。
+<a href="https://www.gsi.go.jp/top.html">国土地理院</a>が作成した<a href="https://www.gsi.go.jp/kankyochiri/gm_jpn.html">地球地図日本</a>の行政界データを利用することとしています（が，別のデータを使うこともできます）。詳しくは，<a href="https://zenn.dev/carook/articles/carook-zenn-r-mapjapan#ベクタ境界データの利用（tmap，ggplot2）">Rで日本地図を描く方法</a>を参考にしてください。
 
 ### Google Earth Engineの利用
-17-18行目でGoogle Earth Engineの利用に必要な情報を設定します。```gee```は標準でFalseにしていますので，利用したい場合はTrueに変えてください。
+17-18行目でGoogle Earth Engineの利用に必要な情報を設定します。利用したい場合は```gee```をTrueに変えて，プロジェクト名を入力してください。
 
 ```R
 ### Google Earth Engineの設定
 gee <- T
 gee_project <- 'プロジェクト名'
 ```
-ダッシュボードでは，データ読み込み日の前年の5月15日から9月15日までのSentinel-2データをCloud Score+データセットを利用して雲除去をした上で表示させるようにしています。日付の選択は50-51行目で変更可能です。
+ダッシュボードでは，データ読み込み日の前年の5月15日から9月15日までのSentinel-2データをCloud Score+データセットを利用して雲除去をした上で表示させるようにしています。日付は50-51行目で変更可能です。
 
 Google Earth Engineの利用については，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee01">RでGoogle Earth Engineを操作できるようにする</a>を参考にしてください。
 
@@ -53,7 +54,7 @@ Google Earth Engineの利用については，<a href="https://zenn.dev/carook/a
 
 ## ダッシュボードの概要
 
-RStudioでダウンロードしたR markdownファイルを開き，スクリプトの上部にある「Run document」アイコンを押すと，ローカルコンピュータで動的なダッシュボード（アプリ）のための配信サーバ（インスタンス）が動作しはじめ，以下の画面が表示されます。
+ダウンロードしたR markdownファイルをRStudioで開き，スクリプトの上部にある「Run document」アイコンを押すと，ローカルコンピュータで動的なダッシュボード（アプリ）のための配信サーバ（インスタンス）が動作しはじめ，以下の画面が表示されます。
 
 ダッシュボードは，「群集情報（調査地点選択）」と「調査地点情報」の2ページに分かれています。
 
@@ -81,4 +82,4 @@ RStudioでダウンロードしたR markdownファイルを開き，スクリプ
 
 7：T002植物表のデータを表示します。
 
-8：調査地点の地図・空中写真・衛星画像データを表示します。赤丸のアイコンで，表示するレイヤを選択することができます。「標準地図（国土地理院）」「年度別空中写真（2007年以降）（国土地理院）」「Esri.WorldImagery」に加えて，Google Earth Engineの利用を可能にすると，Sentinel-2衛星画像から選択できます。
+8：調査地点の地図・空中写真・衛星画像データを表示します。赤丸のアイコンで，表示するレイヤを選びます。ダッシュボードでは「標準地図（国土地理院）」「年度別空中写真（2007年以降）（国土地理院）」「Esri.WorldImagery」に加えて，Google Earth Engineの利用を可能にすると，Sentinel-2衛星画像を表示できるようにしています。
