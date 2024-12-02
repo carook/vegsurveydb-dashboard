@@ -26,7 +26,7 @@ Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケー�
 利用を希望する方は，<a href="https://www.biodic.go.jp/">環境省生物多様性センター</a>の<a href="http://gis.biodic.go.jp/webgis/sc-006.html">植生調査のページ</a>に掲載されている「全国の植生調査データベース（PDF）」記載の専用窓口へメールで依頼してください。ダウンロードURLが送られてきますので，ファイルを取得できます。
 
 ## Rの設定
-ファイルはrmarkdownファイルです。なお，検証はWindows環境で行っており，他のOSでの利用については申し訳ありませんが不明です。
+ファイルはR Markdownファイルです。なお，検証はWindows環境で行っており，他のOSでの利用については申し訳ありませんが不明です。
 ### アクセスファイルの読み込み設定
 14行目に，植生地図データベースのファイルパスを設定します。
 
@@ -38,24 +38,31 @@ Rの<a href="https://pkgs.rstudio.com/flexdashboard/">flexdashboardパッケー�
 ここでは，<a href="https://www.gsi.go.jp/top.html">国土地理院</a>が作成した<a href="https://www.gsi.go.jp/kankyochiri/gm_jpn.html">地球地図日本</a>の行政界データの利用することとしています（が，別のデータを使うこともできます）。詳しくは，<a href="https://zenn.dev/carook/articles/carook-zenn-r-mapjapan#ベクタ境界データの利用（tmap，ggplot2）">Rで日本地図を描く方法</a>を参考にしてください。
 
 ### Google Earth Engineの利用
-markdownファイルの17-18行目でGoogle Earth Engineの利用に必要な情報を設定します。```gee```は標準でFalseにしていますので，利用したい場合はTrueに変えてください。
+17-18行目でGoogle Earth Engineの利用に必要な情報を設定します。```gee```は標準でFalseにしていますので，利用したい場合はTrueに変えてください。
 
 ```R
 ### Google Earth Engineの設定
 gee <- T
 gee_project <- 'プロジェクト名'
 ```
+ダッシュボードでは，データ読み込み日の前年の5月15日から9月15日までのSentinel-2データをCloud Score+データセットを利用して雲除去をした上で表示させるようにしています。日付の選択は50-51行目で変更可能です。
 
 Google Earth Engineの利用については，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee01">RでGoogle Earth Engineを操作できるようにする</a>を参考にしてください。
 
-ダッシュボードではSentinel-2データをCloud Score+データセットを利用して雲除去をした上で表示させるようにしています。コードをそのまま利用する場合には，earthengine-apiがrgeeパッケージで検証されたバージョンよりも新しいものを利用するため，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee07">RでHansenGlobalForestChangeデータと雲除去したSentinel画像を表示してみる</a>を参考に，earthengine-apiを1.1.0以上としてください。なお，Rへのデータ読み込みはないので，ee_sessioninfo.Rの読み込みは不要です。
+コードをそのまま利用する場合には，earthengine-apiについて，rgeeパッケージで検証されたバージョンよりも新しいものを利用するため，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee07">RでHansenGlobalForestChangeデータと雲除去したSentinel画像を表示してみる</a>を参考に，earthengine-apiを1.1.0以上としてください。なお，Rへのデータ読み込みはないので，ee_sessioninfo.Rの読み込みは不要です。
 
 ## ダッシュボードの概要
 ### 初期画面
+RStudioでダウンロードしたR markdownファイルを開き，スクリプトの上部にある「Run document」アイコンを押すと，ローカルコンピュータで動的なダッシュボード（アプリ）のための配信サーバ（インスタンス）が動作しはじめ，以下の画面が表示されます。
+
+ダッシュボードは，「群集情報（調査地点選択）」と「調査地点情報」の2ページに分かれています。
+
 ![初期画面](./vegsurveydb_dashboard-1.png)
 
 ### 群集情報（調査地点選択）
 ![群集情報](./vegsurveydb_dashboard-2.png)
+
+1：
 
 ### 調査地点情報
 ![調査地点情報](./vegsurveydb_dashboard-3.png)
