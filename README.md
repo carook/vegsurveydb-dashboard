@@ -51,6 +51,11 @@ Google Earth Engineの利用については，<a href="https://zenn.dev/carook/a
 ダッシュボードではSentinel-2データをCloud Score+データセットを利用して雲除去をした上で表示させるようにしています。コードをそのまま利用する場合には，earthengine-apiがrgeeパッケージで検証されたバージョンよりも新しいものを利用するため，<a href="https://zenn.dev/carook/articles/carook-zenn-r-rgee07">RでHansenGlobalForestChangeデータと雲除去したSentinel画像を表示してみる</a>を参考に，earthengine-apiを1.1.0以上としてください。なお，Rへのデータ読み込みはないので，ee_sessioninfo.Rの読み込みは不要です。
 
 ## ダッシュボードの概要
+### 初期画面
+![初期画面](./vegsurveydb_dashboard-1.png)
 
-![初期画面](./vegsurvey_dashboard-1.png)
+### 群集情報（調査地点選択）
+![群集情報](./vegsurveydb_dashboard-2.png)
 
+### 調査地点情報
+![調査地点情報](./vegsurveydb_dashboard-3.png)
